@@ -1,0 +1,29 @@
+Stationsnamn: Visby Flygplats					
+
+Stationsnummer: 78400	
+Stationsnät: SMHIs stationsnät	
+Mäthöjd (meter över marken): 10.0			
+					
+Tidsperiod (fr.o.m): 1949-01-01 00:00					
+Tidsperiod (t.o.m): 2025-02-28 23:00
+Höjd (meter över havet): 41.05
+Latitud (decimalgrader): 57.6678
+Longitud (decimalgrader): 18.3516
+Samplingstid = 10 minuter
+
+CSV-filens struktur:
+Datum; Tid (UTC); Vindriktning;	Kvalitet; Vindhastighet; Kvalitet
+
+Datum: YYYY-MM-DD
+Tid (UTC): HH:MM:SS
+Vindriktning: Grader, medelvärde 10 min, 1 gång/tim
+Vindhastighet: Meter per sekund, medelvärde 10 min, 1 gång/tim
+Kvalitetskoderna:
+Grön (G) = Kontrollerade och godkända värden.
+Gul (Y) = Misstänkta eller aggregerade värden. Grovt kontrollerade arkivdata och okontrollerade realtidsdata (senaste 2 tim).
+Nätinformation:
+SMHIs Stationsnät: Data samlas in och lagras i SMHIs databaser. Data kvalitetskontrolleras vilket innebär att felaktiga data korrigeras och att databortfall kompletteras utifrån expertbedömning där det är möjligt. De flesta stationerna övervakas, inspekteras och underhålls löpande av SMHI.
+Övriga stationer: Data samlas in och lagras i SMHIs databaser. Datakvaliteten är för SMHI okänd då SMHI varken utför kvalitetskontroll på data eller inspektioner på stationerna.
+Möjliga orsaker till saknade data:
+– stationen eller givaren har varit ur funktion.
+– stationen har endast levererat värden med kvalitetskod Röd (R). Dessa levereras ej.
