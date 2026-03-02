@@ -99,9 +99,26 @@ public class WindDataHandler {
 	 * @return approved values for each date, sorted by date
 	 */
 	public List<String> approvedValues(LocalDate dateFrom, LocalDate dateTo) {
+        List<String> result = new ArrayList<>();
+        LocalDate currentDate = dateFrom;
+        int approvedWinds = 0;
+        int count = 0;
+        while(!currentDate.isAfter(dateTo))
+        {
+            List<String[]> dataRow = rawData;
+            for(String[] row : dataRow)
+            {
+                if(row[5].equalsIgnoreCase("G") || row[3].equalsIgnoreCase("G")){
+                    approvedWinds++;
+                }
+                count++;
+            }
+            double percentage = count > 0 ? (double) approvedWinds /count : 0;
+            result.add(String.format("%s: %.2f %% approved values", currentDate.format(dateOnlyFormatter), percentage));
+        }
 
 		//TODO: Implement method
-		return null;  //O(1)
+		return result;  //O(1)
 	}
 
 	/**
@@ -118,7 +135,6 @@ public class WindDataHandler {
 	public List<String> highestWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
 		List<String> result = new ArrayList<>();
         LocalDate currentDate = dateFrom;
-        double sum = 0;
         while(!currentDate.isAfter(dateTo)) {
             List<String[]> dataRow = rawData;
            double maxSpeed = -1;
