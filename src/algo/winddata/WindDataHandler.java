@@ -33,23 +33,21 @@ public class WindDataHandler {
             String timeStr = parts[1];
 
             String[] dataRow = new String[6];
+            dataRow[0] = calenderDate;
+            dataRow[1] = timeStr;
             for(int i = 0; i<4; i++)
             {
-                dataRow[0] = calenderDate;
-                dataRow[1] = timeStr;
                 dataRow[i+2] = parts[2+i];
             }
+
             rawData.add(dataRow);
 
 
 
         }
+        System.out.println("Loaded " + rawData.size() + " observations\n");
 
-
-
-		//TODO: Structure data and put it in appropriate data structure
-	}
-
+    }
 	/**
 	 * Search for average wind speed for dates. Result is sorted by date (ascending).
 	 * When searching from 2000-01-01 to 2000-01-03 the result should be:
@@ -61,29 +59,35 @@ public class WindDataHandler {
 	 * @param dateTo   end date (YYYY-MM-DD) inclusive
 	 * @return average wind speed for each date, sorted by date
 	 */
-	public List<String> averageWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
-        List<String> result = new ArrayList<String>();
+    public List<String> averageWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
+        List<String> result = new ArrayList<>();
 
-        LocalDate currentDate = dateFrom;
-        double sum = 0;
+        String data = "";
+        for (LocalDate date = dateFrom; !date.isAfter(dateTo); date = date.plusDays(1)) {
+            double sum = 0;
+            int count = 0;
 
-        while(!currentDate.isAfter(dateTo)) {
+            for (String[] row : rawData) {
+                LocalDate rowDate = LocalDate.parse(row[0], dateOnlyFormatter);
 
-            List<String[]> dayData = rawData;
-
-            for (String[] row : dayData) {
-                try {
-                    double speed = Double.parseDouble(row[4]);
-                    sum += speed;
-                } catch (NumberFormatException e) {
+                if (rowDate.equals(date)) {
+                    try {
+                        double speed = Double.parseDouble(row[4]);
+                        sum += speed;
+                        count++;
+                    } catch (NumberFormatException e) {
+                        // Skip invalid numbers
+                    }
                 }
             }
-            Double averageWindSpeed = sum / rawData.size();
-            result.add(String.format("%s average wind speed: %.2f m/s ", currentDate.format(dateOnlyFormatter), averageWindSpeed));
 
-
-             //O(1)
+           double averageWindSpeed = count > 0 ? sum / count : 0;
+            data = dateFrom.format(dateOnlyFormatter) +  " Average wind speed: "+ Math.round(averageWindSpeed/10);
+            result.add(data);
         }
+
+
+
         return result;
     }
 
@@ -100,11 +104,11 @@ public class WindDataHandler {
 	 */
 	public List<String> approvedValues(LocalDate dateFrom, LocalDate dateTo) {
         List<String> result = new ArrayList<>();
-        LocalDate currentDate = dateFrom;
         int approvedWinds = 0;
         int count = 0;
-        while(!currentDate.isAfter(dateTo))
-        {
+        String data = "";
+      for(LocalDate date = dateFrom; !date.isAfter(dateTo); date = date.plusDays(1))
+      {
             List<String[]> dataRow = rawData;
             for(String[] row : dataRow)
             {
@@ -114,10 +118,12 @@ public class WindDataHandler {
                 count++;
             }
             double percentage = count > 0 ? (double) approvedWinds /count : 0;
-            result.add(String.format("%s: %.2f %% approved values", currentDate.format(dateOnlyFormatter), percentage));
+          data = "Percentage "+ Math.round(percentage*100)+"% " + " From: "+ dateFrom.format(dateOnlyFormatter);
+          result.add(data);
+
         }
 
-		//TODO: Implement method
+
 		return result;  //O(1)
 	}
 
@@ -134,8 +140,7 @@ public class WindDataHandler {
 	 */
 	public List<String> highestWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
 		List<String> result = new ArrayList<>();
-        LocalDate currentDate = dateFrom;
-        while(!currentDate.isAfter(dateTo)) {
+        while(!dateFrom.isAfter(dateTo)) {
             List<String[]> dataRow = rawData;
            double maxSpeed = -1;
             for(String[] row : dataRow){
@@ -151,7 +156,7 @@ public class WindDataHandler {
 
                 }
                 if(maxSpeed > 0) {
-                    result.add(String.format("%s average wind speed: %.2f m/s ", currentDate.format(dateOnlyFormatter), maxSpeed));
+                    result.add(String.format("%s average wind speed: %.2f m/s ", dateFrom.format(dateOnlyFormatter), maxSpeed));
                 }
 
             }

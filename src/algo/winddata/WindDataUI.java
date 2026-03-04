@@ -110,8 +110,8 @@ public class WindDataUI {
         LocalDate dateFrom = getDateInput();
         System.out.print("End date (will be included)\n");
         LocalDate dateTo = getDateInput();
-                       
         presentResult(windData.averageWindSpeed(dateFrom, dateTo));
+
     }
     /**
      * Query user for the percentage of approved values (for both wind direction
@@ -141,16 +141,19 @@ public class WindDataUI {
     }    
     /**
      * Present search result.
-     * 
+     *
      * @param result the result to present
      */
     private void presentResult(List<String> result) {
     	if(result.isEmpty()) {
     		System.out.println("No matching values for the provided query.");
-    	}    	
+    	}
+        int count = 0;
     	for(String s : result) {
     		System.out.println(s);
+            count++;
     	}
+        System.out.println("\nThis many operations ran: "+count);
     }
     /**
      * Return the main menu text.
