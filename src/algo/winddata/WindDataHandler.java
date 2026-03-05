@@ -14,6 +14,9 @@ import java.util.*;
 /**
  * Retrieves wind data from a weather station file.
  * ArrayList according to the datastructure, the timecomplexity should at both worst and best case scenario O(n^2).
+ * This datastructure is an algorithmic method called brute force which is a method that use computing power to solve problems quickly rather than optimizing the code.
+ * It makes it easier to find the solution, and it's also the first step to optimize the code.
+ * It does could use a better method but in this case it doesn't matter since we're not using large amount of data to play with.
  */
 public class WindDataHandler {
     private final ArrayList<String[]> rawData = new ArrayList<>();
