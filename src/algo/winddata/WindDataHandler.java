@@ -13,7 +13,7 @@ import java.util.*;
 
 /**
  * Retrieves wind data from a weather station file.
- * ArrayList according to the datastructure, the timecomplexity should at both worst and best case scenario O(n).
+ * ArrayList according to the datastructure, the timecomplexity should at both worst and best case scenario O(n^2).
  */
 public class WindDataHandler {
     private final ArrayList<String[]> rawData = new ArrayList<>();
@@ -68,7 +68,7 @@ public class WindDataHandler {
      * In this method I am using an iteration to loop through my database, and it should have timecomplexity of O(n).
      * Because I am using enhanced for-loop it'll multiply the timecomplexity to O(n^2) with tree map it could've been more efficient, eta O(nlogn).
      * I also added an if check so it's checking the correct date and try catch so it doesn't receive invalid data.
-     * I calculated the average speed for the entire duration of a day. So it recieves the average for thar specific day.
+     * I calculated the average speed for the entire duration of a day. So it recieves the average for that specific day.
      * Thereafter, I used a simplified if-check to secure the correct data. The main principle is that it should take the sum of the day and divide with how many times it has to go through that specific day.
 	 */
     public List<String> averageWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
@@ -116,6 +116,9 @@ public class WindDataHandler {
      *
      * In this method I am using an iteration to loop through my database, and it should have timecomplexity of O(n).
      * Because I am using enhanced for-loop it'll multiply the timecomplexity to O(n^2) with tree map it could've been more efficient, eta O(nlogn).
+     * This algorithm is trying to find the approvedValues of each winddata in each row. The ones that has "G" within the row are approved while the ones that are "Y" are denied.
+     * I counted how many times it loops through on the same day and check the ones that are considered approved. Thereafter, I divide approved winddata with count to get the percentage value.
+     * In the end I used the percentage value and converted and simplifed it by converting it to natural numbers.
 	 */
 	public List<String> approvedValues(LocalDate dateFrom, LocalDate dateTo) {
         List<String> result = new ArrayList<>();
@@ -159,6 +162,9 @@ public class WindDataHandler {
      *
      * In this method I am using an iteration to loop through my database, and it should have timecomplexity of O(n).
      * Because I am using enhanced for-loop it'll multiply the timecomplexity to O(n^2) with tree map it could've been more efficient, eta O(nlogn).
+     * In this algorithm I am trying to select the highest wind speed on each day. I do that by using an if-check which checks for the value that's greater than its predecessor.
+     * I also made sure to add checks so the value doesn't receive anything that's irrelevant besides double.
+     * In the end I made sure that the data it prints it should be the same as the ones as listed above.
 	 */
 	public List<String> highestWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
 		List<String> result = new ArrayList<>();
