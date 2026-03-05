@@ -1,6 +1,8 @@
 package algo.winddata;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -13,7 +15,7 @@ import java.util.*;
  * Retrieves wind data from a weather station file.
  */
 public class WindDataHandler {
-    ArrayList<String[]> rawData = new ArrayList<>();
+    private final ArrayList<String[]> rawData = new ArrayList<>();
     private final DateTimeFormatter dateOnlyFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 	/**
@@ -35,10 +37,7 @@ public class WindDataHandler {
             String[] dataRow = new String[6];
             dataRow[0] = calenderDate;
             dataRow[1] = timeStr;
-            for(int i = 0; i<4; i++)
-            {
-                dataRow[i+2] = parts[2+i];
-            }
+            System.arraycopy(parts, 2, dataRow, 2, 4);
 
             rawData.add(dataRow);
 
@@ -82,7 +81,7 @@ public class WindDataHandler {
             }
 
            double averageWindSpeed = count > 0 ? sum / count : 0;
-            data = dateFrom.format(dateOnlyFormatter) +  " Average wind speed: "+ Math.round(averageWindSpeed/10);
+            data = date.format(dateOnlyFormatter) +  " Average wind speed: "+ BigDecimal.valueOf(averageWindSpeed).setScale(2, RoundingMode.HALF_UP) + " m/s";
             result.add(data);
         }
 
@@ -107,20 +106,24 @@ public class WindDataHandler {
         int approvedWinds = 0;
         int count = 0;
         String data = "";
+
+
       for(LocalDate date = dateFrom; !date.isAfter(dateTo); date = date.plusDays(1))
       {
-            List<String[]> dataRow = rawData;
-            for(String[] row : dataRow)
-            {
-                if(row[5].equalsIgnoreCase("G") || row[3].equalsIgnoreCase("G")){
-                    approvedWinds++;
-                }
-                count++;
-            }
-            double percentage = count > 0 ? (double) approvedWinds /count : 0;
-          data = "Percentage "+ Math.round(percentage*100)+"% " + " From: "+ dateFrom.format(dateOnlyFormatter);
+          for(String[] row : rawData) {
+              LocalDate rowDate = LocalDate.parse(row[0], dateOnlyFormatter);
+              if(rowDate.equals(date)) {
+                  try {
+                      if (row[5].equalsIgnoreCase("G")) {
+                          approvedWinds++;
+                      }
+                      count++;
+                  }catch(NumberFormatException _){}
+              }
+          }
+          double percentage = count > 0 ? (double) approvedWinds / count : 0;
+          data = "Percentage " + BigDecimal.valueOf(percentage*100).setScale(2, RoundingMode.HALF_UP) + "% " + " From: " + date.format(dateOnlyFormatter);
           result.add(data);
-
         }
 
 
@@ -140,23 +143,28 @@ public class WindDataHandler {
 	 */
 	public List<String> highestWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
 		List<String> result = new ArrayList<>();
-        while(!dateFrom.isAfter(dateTo)) {
-            List<String[]> dataRow = rawData;
-           double maxSpeed = -1;
-            for(String[] row : dataRow){
-                try {
-                    double windSpeed = Double.parseDouble(row[4]);
-                    if (windSpeed > maxSpeed) {
-                        maxSpeed = windSpeed;
-                    }
-                }catch(NumberFormatException e)
-                    {
+        String data = "";
+        String timeHour = "";
+        for(LocalDate date = dateFrom; !date.isAfter(dateTo); date = date.plusDays(1)) {
+            double maxSpeed = -1;
+            for(String[] row : rawData){
+                LocalDate rowDate = LocalDate.parse(row[0], dateOnlyFormatter);
+                if(rowDate.equals(date)) {
+                    try {
+                        double windSpeed = Double.parseDouble(row[4]);
+
+                        if (windSpeed > maxSpeed) {
+                            maxSpeed = windSpeed;
+                            timeHour = row[1];
+                        }
+                    } catch (NumberFormatException e) {
 
                     }
-
+                }
                 }
                 if(maxSpeed > 0) {
-                    result.add(String.format("%s average wind speed: %.2f m/s ", dateFrom.format(dateOnlyFormatter), maxSpeed));
+                    data = date.format(dateOnlyFormatter) + " " + timeHour.substring(0, timeHour.length() - 3)+ ": " + BigDecimal.valueOf(maxSpeed).setScale(2, RoundingMode.HALF_UP) + " m/s";
+                    result.add(data);
                 }
 
             }
