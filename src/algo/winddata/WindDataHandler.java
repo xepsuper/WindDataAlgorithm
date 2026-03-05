@@ -13,6 +13,7 @@ import java.util.*;
 
 /**
  * Retrieves wind data from a weather station file.
+ * ArrayList according to the datastructure, the timecomplexity should at both worst and best case scenario O(n).
  */
 public class WindDataHandler {
     private final ArrayList<String[]> rawData = new ArrayList<>();
@@ -23,9 +24,15 @@ public class WindDataHandler {
 	 *
 	 * @param filePath path to file with weather data
 	 * @throws IOException if there is a problem while reading the file
+     *
+     * The enhanced for-loop should return with time complexity O(n) since it's an iteration
+     * Problem with this iteration is that I am using an array to store specific row with data which should technically use O(n^2)
+     * In this case it's not optimal, however it could've been better if I have chosen better datastructures like treemap since it stores with timecomplexity of O(logn).
+     * But I am not obligated to optimize the datastructure as long I keep it below O(n^3).
 	 */
 	public void loadData(String filePath) throws IOException {
 		List<String> fileData = Files.readAllLines(Paths.get(filePath));  //O(n)
+
 
         for(String line : fileData)
         { if (line.trim().isEmpty() || line.startsWith("#")) {continue;}
@@ -33,8 +40,8 @@ public class WindDataHandler {
             String[] parts = line.split(";");
             String calenderDate = parts[0];
             String timeStr = parts[1];
-
             String[] dataRow = new String[6];
+
             dataRow[0] = calenderDate;
             dataRow[1] = timeStr;
             System.arraycopy(parts, 2, dataRow, 2, 4);
@@ -57,6 +64,12 @@ public class WindDataHandler {
 	 * @param dateFrom start date (YYYY-MM-DD) inclusive
 	 * @param dateTo   end date (YYYY-MM-DD) inclusive
 	 * @return average wind speed for each date, sorted by date
+     *
+     * In this method I am using an iteration to loop through my database, and it should have timecomplexity of O(n).
+     * Because I am using enhanced for-loop it'll multiply the timecomplexity to O(n^2) with tree map it could've been more efficient, eta O(nlogn).
+     * I also added an if check so it's checking the correct date and try catch so it doesn't receive invalid data.
+     * I calculated the average speed for the entire duration of a day. So it recieves the average for thar specific day.
+     * Thereafter, I used a simplified if-check to secure the correct data. The main principle is that it should take the sum of the day and divide with how many times it has to go through that specific day.
 	 */
     public List<String> averageWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
         List<String> result = new ArrayList<>();
@@ -100,6 +113,9 @@ public class WindDataHandler {
 	 * @param dateFrom start date (YYYY-MM-DD) inclusive
 	 * @param dateTo   end date (YYYY-MM-DD) inclusive
 	 * @return approved values for each date, sorted by date
+     *
+     * In this method I am using an iteration to loop through my database, and it should have timecomplexity of O(n).
+     * Because I am using enhanced for-loop it'll multiply the timecomplexity to O(n^2) with tree map it could've been more efficient, eta O(nlogn).
 	 */
 	public List<String> approvedValues(LocalDate dateFrom, LocalDate dateTo) {
         List<String> result = new ArrayList<>();
@@ -140,6 +156,9 @@ public class WindDataHandler {
 	 * @param dateFrom start date (YYYY-MM-DD) inclusive
 	 * @param dateTo   end date (YYYY-MM-DD) inclusive
 	 * @return highest wind speed for each date, sorted by date
+     *
+     * In this method I am using an iteration to loop through my database, and it should have timecomplexity of O(n).
+     * Because I am using enhanced for-loop it'll multiply the timecomplexity to O(n^2) with tree map it could've been more efficient, eta O(nlogn).
 	 */
 	public List<String> highestWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
 		List<String> result = new ArrayList<>();
