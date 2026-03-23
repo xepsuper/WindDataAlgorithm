@@ -19,7 +19,7 @@ import java.util.*;
  * It does could use a better method but in this case it doesn't matter since we're not using large amount of data to play with.
  */
 public class WindDataHandler {
-    private final ArrayList<String[]> rawData = new ArrayList<>();
+    private final ArrayList<WindData> rawData = new ArrayList<>();
     private final DateTimeFormatter dateOnlyFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 	/**
@@ -41,18 +41,15 @@ public class WindDataHandler {
         { if (line.trim().isEmpty() || line.startsWith("#")) {continue;}
 
             String[] parts = line.split(";");
-            String calenderDate = parts[0];
-            String timeStr = parts[1];
-            String[] dataRow = new String[6];
+            // parsed values
+            LocalDate calenderDate = LocalDate.parse(parts[0]);
+            LocalDate timeStr = LocalDate.parse(parts[1]);
+            Double windDirection = Double.parseDouble(parts[2]);
+            String qualityControl2 = parts[3];
+            Double windSpeed = Double.parseDouble(parts[4]);
+            String qualityControl1 = parts[5];
 
-            dataRow[0] = calenderDate;
-            dataRow[1] = timeStr;
-            System.arraycopy(parts, 2, dataRow, 2, 4);
-
-            rawData.add(dataRow);
-
-
-
+            rawData.add(new WindData(calenderDate, timeStr, windDirection, qualityControl1, windSpeed, qualityControl2));
         }
         System.out.println("Loaded " + rawData.size() + " observations\n");
 
@@ -185,7 +182,7 @@ public class WindDataHandler {
                             maxSpeed = windSpeed;
                             timeHour = row[1];
                         }
-                    } catch (NumberFormatException e) {
+                    } catch (NumberFormatException _) {
 
                     }
                 }
