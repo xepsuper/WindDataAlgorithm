@@ -5,13 +5,13 @@ import java.time.LocalDate;
 public class WindData
 {
     private final LocalDate dateTime;
-    private final LocalDate timeStr;
+    private final String timeStr;
     private final Double windSpeed;
     private final Double windDirection;
     private final String qualityControl1;
     private final String qualityControl2;
 
-    public WindData(LocalDate dateTime, LocalDate timeStr, Double windSpeed, String qualityControl2, Double windDirection, String qualityControl) {
+    public WindData(LocalDate dateTime, String timeStr, Double windDirection, String qualityControl2, Double windSpeed, String qualityControl) {
         this.dateTime = dateTime;
         this.timeStr = timeStr;
         this.windSpeed = windSpeed;
@@ -20,7 +20,7 @@ public class WindData
         this.qualityControl2 = qualityControl2;
     }
 
-    public LocalDate getTimeStr() {
+    public String getTimeStr() {
         return timeStr;
     }
 

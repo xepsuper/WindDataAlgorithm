@@ -20,88 +20,85 @@ import java.util.*;
  */
 public class WindDataHandler {
     private final ArrayList<WindData> rawData = new ArrayList<>();
+
     private final DateTimeFormatter dateOnlyFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-	/**
-	 * Load wind data from file.
-	 *
-	 * @param filePath path to file with weather data
-	 * @throws IOException if there is a problem while reading the file
+    /**
+     * Load wind data from file.
      *
-     * The enhanced for-loop should return with time complexity O(n) since it's an iteration
-     * Problem with this iteration is that I am using an array to store specific row with data which should technically use O(n^2)
-     * In this case it's not optimal, however it could've been better if I have chosen better datastructures like treemap since it stores with timecomplexity of O(logn).
-     * But I am not obligated to optimize the datastructure as long I keep it below O(n^3).
-	 */
-	public void loadData(String filePath) throws IOException {
-		List<String> fileData = Files.readAllLines(Paths.get(filePath));  //O(n)
+     * @param filePath path to file with weather data
+     * @throws IOException if there is a problem while reading the file
+     *                     <p>
+     *                     The enhanced for-loop should return with time complexity O(n) since it's an iteration
+     *                     Problem with this iteration is that I am using an array to store specific row with data which should technically use O(n^2)
+     *                     In this case it's not optimal, however it could've been better if I have chosen better datastructures like treemap since it stores with timecomplexity of O(logn).
+     *                     But I am not obligated to optimize the datastructure as long I keep it below O(n^3).
+     */
+    public void loadData(String filePath) throws IOException {
+        List<String> fileData = Files.readAllLines(Paths.get(filePath));  //O(n)
 
 
-        for(String line : fileData)
-        { if (line.trim().isEmpty() || line.startsWith("#")) {continue;}
+        for (String line : fileData) {
+            if (line.trim().isEmpty() || line.startsWith("#")) {
+                continue;
+            }
 
             String[] parts = line.split(";");
             // parsed values
-            LocalDate calenderDate = LocalDate.parse(parts[0]);
-            LocalDate timeStr = LocalDate.parse(parts[1]);
-            Double windDirection = Double.parseDouble(parts[2]);
-            String qualityControl2 = parts[3];
-            Double windSpeed = Double.parseDouble(parts[4]);
-            String qualityControl1 = parts[5];
+            try {
+                LocalDate calenderDate = LocalDate.parse(parts[0]);
+                String timeStr = parts[1];
+                Double windDirection = Double.parseDouble(parts[2]);
+                String qualityControl2 = parts[3];
+                Double windSpeed = Double.parseDouble(parts[4]);
+                String qualityControl1 = parts[5];
+                rawData.add(new WindData(calenderDate, timeStr, windDirection, qualityControl1, windSpeed, qualityControl2));
+            }catch (Exception e){
+                System.out.println(e);
+            }
 
-            rawData.add(new WindData(calenderDate, timeStr, windDirection, qualityControl1, windSpeed, qualityControl2));
+
         }
         System.out.println("Loaded " + rawData.size() + " observations\n");
 
     }
-	/**
-	 * Search for average wind speed for dates. Result is sorted by date (ascending).
-	 * When searching from 2000-01-01 to 2000-01-03 the result should be:
-	 * 2000-01-01 average wind speed: 4.29 m/s
-	 * 2000-01-02 average wind speed: 6.48 m/s
-	 * 2000-01-03 average wind speed: 5.74 m/s
-	 *
-	 * @param dateFrom start date (YYYY-MM-DD) inclusive
-	 * @param dateTo   end date (YYYY-MM-DD) inclusive
-	 * @return average wind speed for each date, sorted by date
+
+    /**
+     * Search for average wind speed for dates. Result is sorted by date (ascending).
+     * When searching from 2000-01-01 to 2000-01-03 the result should be:
+     * 2000-01-01 average wind speed: 4.29 m/s
+     * 2000-01-02 average wind speed: 6.48 m/s
+     * 2000-01-03 average wind speed: 5.74 m/s
      *
+     * @param dateFrom start date (YYYY-MM-DD) inclusive
+     * @param dateTo   end date (YYYY-MM-DD) inclusive
+     * @return average wind speed for each date, sorted by date
+     * <p>
      * In this method I am using an iteration to loop through my database, and it should have timecomplexity of O(n).
      * Because I am using enhanced for-loop it'll multiply the timecomplexity to O(n^2) with tree map it could've been more efficient, eta O(nlogn).
      * I also added an if check so it's checking the correct date and try catch so it doesn't receive invalid data.
      * I calculated the average speed for the entire duration of a day. So it recieves the average for that specific day.
      * Thereafter, I used a simplified if-check to secure the correct data. The main principle is that it should take the sum of the day and divide with how many times it has to go through that specific day.
-	 */
+     */
     public List<String> averageWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
         List<String> result = new ArrayList<>();
+        int fromIndex = Collections.binarySearch(rawData, new WindData(dateFrom, null, null, null, null, null), Comparator.comparing(WindData::getDateTime));
+        fromIndex = fromIndex >= 0 ? fromIndex : -fromIndex -1;
+        int toIndex = Collections.binarySearch(rawData, new WindData(dateTo, null, null, null, null, null), Comparator.comparing(WindData::getDateTime));
+        toIndex = toIndex >= 0 ? toIndex +1  : -toIndex -1;
+        double averageWindSpeed = 0;
+        int count = 0;
+        final List<WindData> sublist = rawData.subList(fromIndex, toIndex);
 
-        String data = "";
-        for (LocalDate date = dateFrom; !date.isAfter(dateTo); date = date.plusDays(1)) {
-            double sum = 0;
-            int count = 0;
-
-            for (String[] row : rawData) {
-                LocalDate rowDate = LocalDate.parse(row[0], dateOnlyFormatter);
-
-                if (rowDate.equals(date)) {
-                    try {
-                        double speed = Double.parseDouble(row[4]);
-                        sum += speed;
-                        count++;
-                    } catch (NumberFormatException e) {
-                        // Skip invalid numbers
-                    }
-                }
-            }
-
-           double averageWindSpeed = count > 0 ? sum / count : 0;
-            data = date.format(dateOnlyFormatter) +  " Average wind speed: "+ BigDecimal.valueOf(averageWindSpeed).setScale(2, RoundingMode.HALF_UP) + " m/s";
-            result.add(data);
+        for (WindData data : sublist) {
+    averageWindSpeed += data.getWindSpeed();
+    count++;
         }
-
-
-
-        return result;
+       String data = dateFrom.format(dateOnlyFormatter)+ " average wind speed: " + BigDecimal.valueOf(averageWindSpeed/count).setScale(1, RoundingMode.HALF_UP) + " m/s";
+               result.add(data);
+return result;
     }
+
 
 	/**
 	 * Search for percentage of approved values (for both wind speed and wind direction) for dates.
@@ -121,32 +118,33 @@ public class WindDataHandler {
      * In the end I used the percentage value and converted and simplifed it by converting it to natural numbers.
 	 */
 	public List<String> approvedValues(LocalDate dateFrom, LocalDate dateTo) {
-        List<String> result = new ArrayList<>();
-        int approvedWinds = 0;
-        int count = 0;
-        String data = "";
-
-
-      for(LocalDate date = dateFrom; !date.isAfter(dateTo); date = date.plusDays(1))
-      {
-          for(String[] row : rawData) {
-              LocalDate rowDate = LocalDate.parse(row[0], dateOnlyFormatter);
-              if(rowDate.equals(date)) {
-                  try {
-                      if (row[5].equalsIgnoreCase("G")) {
-                          approvedWinds++;
-                      }
-                      count++;
-                  }catch(NumberFormatException _){}
-              }
-          }
-          double percentage = count > 0 ? (double) approvedWinds / count : 0;
-          data = "Percentage " + BigDecimal.valueOf(percentage*100).setScale(2, RoundingMode.HALF_UP) + "% " + " From: " + date.format(dateOnlyFormatter);
-          result.add(data);
-        }
-
-
-		return result;  //O(1)
+//        List<String> result = new ArrayList<>();
+//        int approvedWinds = 0;
+//        int count = 0;
+//        String data = "";
+//
+//
+//      for(LocalDate date = dateFrom; !date.isAfter(dateTo); date = date.plusDays(1))
+//      {
+//          for(WindData row : rawData) {
+//              LocalDate rowDate = LocalDate.parse(row[0], dateOnlyFormatter);
+//              if(rowDate.equals(date)) {
+//                  try {
+//                      if (row[5].equalsIgnoreCase("G")) {
+//                          approvedWinds++;
+//                      }
+//                      count++;
+//                  }catch(NumberFormatException _){}
+//              }
+//          }
+//          double percentage = count > 0 ? (double) approvedWinds / count : 0;
+//          data = "Percentage " + BigDecimal.valueOf(percentage*100).setScale(2, RoundingMode.HALF_UP) + "% " + " From: " + date.format(dateOnlyFormatter);
+//          result.add(data);
+//        }
+//
+//
+//		return result;  //O(1)r
+        return null;
 	}
 
 	/**
@@ -167,32 +165,33 @@ public class WindDataHandler {
      * In the end I made sure that the data it prints it should be the same as the ones as listed above.
 	 */
 	public List<String> highestWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
-		List<String> result = new ArrayList<>();
-        String data = "";
-        String timeHour = "";
-        for(LocalDate date = dateFrom; !date.isAfter(dateTo); date = date.plusDays(1)) {
-            double maxSpeed = -1;
-            for(String[] row : rawData){
-                LocalDate rowDate = LocalDate.parse(row[0], dateOnlyFormatter);
-                if(rowDate.equals(date)) {
-                    try {
-                        double windSpeed = Double.parseDouble(row[4]);
-
-                        if (windSpeed > maxSpeed) {
-                            maxSpeed = windSpeed;
-                            timeHour = row[1];
-                        }
-                    } catch (NumberFormatException _) {
-
-                    }
-                }
-                }
-                if(maxSpeed > 0) {
-                    data = date.format(dateOnlyFormatter) + " " + timeHour.substring(0, timeHour.length() - 3)+ ": " + BigDecimal.valueOf(maxSpeed).setScale(2, RoundingMode.HALF_UP) + " m/s";
-                    result.add(data);
-                }
-
-            }
-        return result;
+//		List<String> result = new ArrayList<>();
+//        String data = "";
+//        String timeHour = "";
+//        for(LocalDate date = dateFrom; !date.isAfter(dateTo); date = date.plusDays(1)) {
+//            double maxSpeed = -1;
+//            for(String[] row : rawData){
+//                LocalDate rowDate = LocalDate.parse(row[0], dateOnlyFormatter);
+//                if(rowDate.equals(date)) {
+//                    try {
+//                        double windSpeed = Double.parseDouble(row[4]);
+//
+//                        if (windSpeed > maxSpeed) {
+//                            maxSpeed = windSpeed;
+//                            timeHour = row[1];
+//                        }
+//                    } catch (NumberFormatException _) {
+//
+//                    }
+//                }
+//                }
+//                if(maxSpeed > 0) {
+//                    data = date.format(dateOnlyFormatter) + " " + timeHour.substring(0, timeHour.length() - 3)+ ": " + BigDecimal.valueOf(maxSpeed).setScale(2, RoundingMode.HALF_UP) + " m/s";
+//                    result.add(data);
+//                }
+//
+//            }
+//        return result;
+        return null;
     }
 }
