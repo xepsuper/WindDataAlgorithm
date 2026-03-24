@@ -82,15 +82,15 @@ public class WindDataHandler {
      */
     public List<String> averageWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
         List<String> result = new ArrayList<>();
-        int fromIndex = Collections.binarySearch(rawData, new WindData(dateFrom, null, null, null, null, null), Comparator.comparing(WindData::getDateTime));
-        fromIndex = fromIndex >= 0 ? fromIndex : -fromIndex -1;
-        int toIndex = Collections.binarySearch(rawData, new WindData(dateTo, null, null, null, null, null), Comparator.comparing(WindData::getDateTime));
-        toIndex = toIndex >= 0 ? toIndex +1  : -toIndex -1;
+        int fromIndex = Collections.binarySearch(rawData, new WindData(dateFrom, null, null, null, null, null), Comparator.comparing(WindData::getDateTime)); //logn
+        fromIndex = fromIndex >= 0 ? fromIndex +1 : -fromIndex -1;
+        int toIndex = Collections.binarySearch(rawData, new WindData(dateTo, null, null, null, null, null), Comparator.comparing(WindData::getDateTime)); // logn
+        toIndex = toIndex >= 0 ? toIndex  : -toIndex -1;
         double averageWindSpeed = 0;
         int count = 0;
-        final List<WindData> sublist = rawData.subList(fromIndex, toIndex);
+        final List<WindData> sublist = rawData.subList(fromIndex, toIndex); //O(k)
 
-        for (WindData data : sublist) {
+        for (WindData data : sublist) {  //O(k)
     averageWindSpeed += data.getWindSpeed();
     count++;
         }
@@ -143,7 +143,7 @@ return result;
 //        }
 //
 //
-//		return result;  //O(1)r
+//		return result;  //O(1)
         return null;
 	}
 
@@ -165,8 +165,27 @@ return result;
      * In the end I made sure that the data it prints it should be the same as the ones as listed above.
 	 */
 	public List<String> highestWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
-//		List<String> result = new ArrayList<>();
-//        String data = "";
+        List<String> result = new ArrayList<>();
+        int fromIndex = Collections.binarySearch(rawData, new WindData(dateFrom, null, null, null, null, null), Comparator.comparing(WindData::getDateTime)); //logn
+        fromIndex = fromIndex >= 0 ? fromIndex +1 : -fromIndex -1;
+        int toIndex = Collections.binarySearch(rawData, new WindData(dateTo, null, null, null, null, null), Comparator.comparing(WindData::getDateTime)); // logn
+        toIndex = toIndex >= 0 ? toIndex   : -toIndex -1;
+        double maxSpeed = 0;
+        String strData = "";
+        final List<WindData> sublist = rawData.subList(fromIndex, toIndex); //O(k)
+
+        for (WindData data : sublist) {  //O(k)
+            double windSpeed = data.getWindSpeed();
+            String timeStr = data.getTimeStr();
+            if(windSpeed > maxSpeed){
+                maxSpeed = windSpeed;
+               strData = dateFrom.format(dateOnlyFormatter) + " " + timeStr.substring(0, timeStr.length()-3) + ": " + maxSpeed + " m/s";
+               result.add(strData);
+            }
+        }
+        return result;
+    }
+        //        String data = "";
 //        String timeHour = "";
 //        for(LocalDate date = dateFrom; !date.isAfter(dateTo); date = date.plusDays(1)) {
 //            double maxSpeed = -1;
@@ -192,6 +211,4 @@ return result;
 //
 //            }
 //        return result;
-        return null;
     }
-}
