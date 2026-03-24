@@ -6,8 +6,6 @@ import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -82,25 +80,90 @@ public class WindDataHandler {
      */
     public List<String> averageWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
         List<String> result = new ArrayList<>();
-        int fromIndex = Collections.binarySearch(rawData, new WindData(dateFrom, null, null, null, null, null), Comparator.comparing(WindData::getDateTime)); //logn
-        fromIndex = fromIndex >= 0 ? fromIndex +1 : -fromIndex -1;
-        int toIndex = Collections.binarySearch(rawData, new WindData(dateTo, null, null, null, null, null), Comparator.comparing(WindData::getDateTime)); // logn
-        toIndex = toIndex >= 0 ? toIndex  : -toIndex -1;
-        double averageWindSpeed = 0;
-        int count = 0;
-        final List<WindData> sublist = rawData.subList(fromIndex, toIndex); //O(k)
 
-        for (WindData data : sublist) {  //O(k)
-    averageWindSpeed += data.getWindSpeed();
-    count++;
+        // Sort first
+        rawData.sort(Comparator.comparing(WindData::getDateTime));
+
+        // Find fromIndex - get the first occurrence of dateFrom
+        int fromIndex = Collections.binarySearch(rawData, new WindData(dateFrom, null, null, null, null, null),
+                Comparator.comparing(WindData::getDateTime));
+
+        if (fromIndex < 0) {
+            fromIndex = -fromIndex - 1;  // Insertion point
+        } else {
+            // Move to the first occurrence of this date
+            while (fromIndex > 0 && rawData.get(fromIndex - 1).getDateTime().equals(dateFrom)) {
+                fromIndex--;
+            }
         }
-       String data = dateFrom.format(dateOnlyFormatter)+ " average wind speed: " + BigDecimal.valueOf(averageWindSpeed/count).setScale(1, RoundingMode.HALF_UP) + " m/s";
-               result.add(data);
-return result;
+
+        // Find toIndex - get the last occurrence of dateTo
+        int toIndex = getToIndex(dateTo);
+
+        double averageWindSpeed = 0;
+        String dataStr = "";
+
+        final List<WindData> sublist = rawData.subList(fromIndex, toIndex);
+
+        LocalDate currentDay = null;
+        double dailySum = 0;
+        int dailyCount = 0;
+
+        for (WindData data : sublist) {
+            LocalDate dataDate = data.getDateTime();
+
+            if (currentDay == null) {
+                currentDay = dataDate;
+            }
+
+            if (!dataDate.equals(currentDay)) {
+                if (dailyCount > 0) {
+                    averageWindSpeed = dailySum / dailyCount;
+                    dataStr = currentDay.format(dateOnlyFormatter) +
+                            " average wind speed: " +
+                            BigDecimal.valueOf(averageWindSpeed).setScale(2, RoundingMode.HALF_UP) +
+                            " m/s (" + dailyCount + " records)";
+                    result.add(dataStr);
+                }
+                currentDay = dataDate;
+                dailySum = 0;
+                dailyCount = 0;
+            }
+
+            dailySum += data.getWindSpeed();
+            dailyCount++;
+        }
+
+        if (currentDay != null && dailyCount > 0) {
+            averageWindSpeed = dailySum / dailyCount;
+            dataStr = currentDay.format(dateOnlyFormatter) +
+                    " average wind speed: " +
+                    BigDecimal.valueOf(averageWindSpeed).setScale(2, RoundingMode.HALF_UP) +
+                    " m/s (" + dailyCount + " records)";
+            result.add(dataStr);
+        }
+
+        return result;
+    }
+
+    private int getToIndex(LocalDate dateTo) {
+        int toIndex = Collections.binarySearch(rawData, new WindData(dateTo, null, null, null, null, null),
+                Comparator.comparing(WindData::getDateTime));
+
+        if (toIndex < 0) {
+            toIndex = -toIndex - 1;  // Insertion point
+        } else {
+            // Move to the last occurrence of this date
+            while (toIndex < rawData.size() - 1 && rawData.get(toIndex + 1).getDateTime().equals(dateTo)) {
+                toIndex++;
+            }
+            toIndex = toIndex + 1;  // Exclusive end index
+        }
+        return toIndex;
     }
 
 
-	/**
+    /**
 	 * Search for percentage of approved values (for both wind speed and wind direction) for dates.
 	 * When searching from 2000-01-01 to 2000-01-03 the result should be:
 	 * 2000-01-01: 33.33 % approved values
@@ -118,6 +181,31 @@ return result;
      * In the end I used the percentage value and converted and simplifed it by converting it to natural numbers.
 	 */
 	public List<String> approvedValues(LocalDate dateFrom, LocalDate dateTo) {
+        List<String> result = new ArrayList<>();
+
+        // Sort first
+        rawData.sort(Comparator.comparing(WindData::getDateTime));
+
+        // Find fromIndex - get the first occurrence of dateFrom
+        int fromIndex = Collections.binarySearch(rawData, new WindData(dateFrom, null, null, null, null, null),
+                Comparator.comparing(WindData::getDateTime));
+
+        if (fromIndex < 0) {
+            fromIndex = -fromIndex - 1;  // Insertion point
+        } else {
+            // Move to the first occurrence of this date
+            while (fromIndex > 0 && rawData.get(fromIndex - 1).getDateTime().equals(dateFrom)) {
+                fromIndex--;
+            }
+        }
+
+        // Find toIndex - get the last occurrence of dateTo
+        int toIndex = getToIndex(dateTo);
+
+        double averageWindSpeed = 0;
+        String dataStr = "";
+
+        final List<WindData> sublist = rawData.subList(fromIndex, toIndex);
 //        List<String> result = new ArrayList<>();
 //        int approvedWinds = 0;
 //        int count = 0;
@@ -166,13 +254,32 @@ return result;
 	 */
 	public List<String> highestWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
         List<String> result = new ArrayList<>();
-        int fromIndex = Collections.binarySearch(rawData, new WindData(dateFrom, null, null, null, null, null), Comparator.comparing(WindData::getDateTime)); //logn
-        fromIndex = fromIndex >= 0 ? fromIndex +1 : -fromIndex -1;
-        int toIndex = Collections.binarySearch(rawData, new WindData(dateTo, null, null, null, null, null), Comparator.comparing(WindData::getDateTime)); // logn
-        toIndex = toIndex >= 0 ? toIndex   : -toIndex -1;
-        double maxSpeed = 0;
-        String strData = "";
-        final List<WindData> sublist = rawData.subList(fromIndex, toIndex); //O(k)
+
+        // Sort first
+        rawData.sort(Comparator.comparing(WindData::getDateTime));
+
+        // Find fromIndex - get the first occurrence of dateFrom
+        int fromIndex = Collections.binarySearch(rawData, new WindData(dateFrom, null, null, null, null, null),
+                Comparator.comparing(WindData::getDateTime));
+
+        if (fromIndex < 0) {
+            fromIndex = -fromIndex - 1;  // Insertion point
+        } else {
+            // Move to the first occurrence of this date
+            while (fromIndex > 0 && rawData.get(fromIndex - 1).getDateTime().equals(dateFrom)) {
+                fromIndex--;
+            }
+        }
+
+        // Find toIndex - get the last occurrence of dateTo
+        int toIndex = getToIndex(dateTo);
+
+        double averageWindSpeed = 0;
+        String dataStr = "";
+
+        final List<WindData> sublist = rawData.subList(fromIndex, toIndex);//O(k)
+
+
 
         for (WindData data : sublist) {  //O(k)
             double windSpeed = data.getWindSpeed();
