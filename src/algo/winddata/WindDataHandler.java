@@ -79,25 +79,9 @@ public class WindDataHandler {
      * Thereafter, I used a simplified if-check to secure the correct data. The main principle is that it should take the sum of the day and divide with how many times it has to go through that specific day.
      */
     public List<String> averageWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
+        checkDate(dateFrom, dateTo);
         List<String> result = new ArrayList<>();
 
-        // Sort first
-        rawData.sort(Comparator.comparing(WindData::getDateTime));
-
-        // Find fromIndex - get the first occurrence of dateFrom
-        int fromIndex = Collections.binarySearch(rawData, new WindData(dateFrom, null, null, null, null, null),
-                Comparator.comparing(WindData::getDateTime));
-
-        if (fromIndex < 0) {
-            fromIndex = -fromIndex - 1;  // Insertion point
-        } else {
-            // Move to the first occurrence of this date
-            while (fromIndex > 0 && rawData.get(fromIndex - 1).getDateTime().equals(dateFrom)) {
-                fromIndex--;
-            }
-        }
-
-        // Find toIndex - get the last occurrence of dateTo
         int toIndex = getToIndex(dateTo);
 
         double averageWindSpeed = 0;
@@ -146,21 +130,6 @@ public class WindDataHandler {
         return result;
     }
 
-    private int getToIndex(LocalDate dateTo) {
-        int toIndex = Collections.binarySearch(rawData, new WindData(dateTo, null, null, null, null, null),
-                Comparator.comparing(WindData::getDateTime));
-
-        if (toIndex < 0) {
-            toIndex = -toIndex - 1;  // Insertion point
-        } else {
-            // Move to the last occurrence of this date
-            while (toIndex < rawData.size() - 1 && rawData.get(toIndex + 1).getDateTime().equals(dateTo)) {
-                toIndex++;
-            }
-            toIndex = toIndex + 1;  // Exclusive end index
-        }
-        return toIndex;
-    }
 
 
     /**
@@ -181,26 +150,14 @@ public class WindDataHandler {
      * In the end I used the percentage value and converted and simplifed it by converting it to natural numbers.
 	 */
 	public List<String> approvedValues(LocalDate dateFrom, LocalDate dateTo) {
+        checkDate(dateFrom, dateTo);
         List<String> result = new ArrayList<>();
-
-        // Sort first
-        rawData.sort(Comparator.comparing(WindData::getDateTime));
-
         // Find fromIndex - get the first occurrence of dateFrom
-        int fromIndex = Collections.binarySearch(rawData, new WindData(dateFrom, null, null, null, null, null),
-                Comparator.comparing(WindData::getDateTime));
 
-        if (fromIndex < 0) {
-            fromIndex = -fromIndex - 1;  // Insertion point
-        } else {
-            // Move to the first occurrence of this date
-            while (fromIndex > 0 && rawData.get(fromIndex - 1).getDateTime().equals(dateFrom)) {
-                fromIndex--;
-            }
-        }
 
         // Find toIndex - get the last occurrence of dateTo
         int toIndex = getToIndex(dateTo);
+        int fromIndex = getFromIndex(dateFrom);
 
         double averageWindSpeed = 0;
         String dataStr = "";
@@ -253,11 +210,9 @@ public class WindDataHandler {
      * In the end I made sure that the data it prints it should be the same as the ones as listed above.
 	 */
 	public List<String> highestWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
+        checkDate(dateFrom, dateTo);
+
         List<String> result = new ArrayList<>();
-
-        // Sort first
-        rawData.sort(Comparator.comparing(WindData::getDateTime));
-
         // Find fromIndex - get the first occurrence of dateFrom
         int fromIndex = Collections.binarySearch(rawData, new WindData(dateFrom, null, null, null, null, null),
                 Comparator.comparing(WindData::getDateTime));
@@ -292,7 +247,10 @@ public class WindDataHandler {
         }
         return result;
     }
-        //        String data = "";
+
+
+
+    //        String data = "";
 //        String timeHour = "";
 //        for(LocalDate date = dateFrom; !date.isAfter(dateTo); date = date.plusDays(1)) {
 //            double maxSpeed = -1;
@@ -318,4 +276,39 @@ public class WindDataHandler {
 //
 //            }
 //        return result;
+    private void checkDate(LocalDate dateFrom, LocalDate dateTo) {
+        if(dateFrom.isAfter(dateTo) || dateTo == null){
+            System.out.println("Skriv in värde och skriv datumet korrekt");
+        }
     }
+    private int getToIndex(LocalDate dateTo) {
+        int toIndex = Collections.binarySearch(rawData, new WindData(dateTo, null, null, null, null, null),
+                Comparator.comparing(WindData::getDateTime));
+
+        if (toIndex < 0) {
+            toIndex = -toIndex - 1;  // Insertion point
+        } else {
+            // Move to the last occurrence of this date
+            while (toIndex < rawData.size() - 1 && rawData.get(toIndex + 1).getDateTime().equals(dateTo)) {
+                toIndex++;
+            }
+            toIndex = toIndex + 1;  // Exclusive end index
+        }
+        return toIndex;
+    }
+    private int getFromIndex(LocalDate dateFrom){
+        int fromIndex = Collections.binarySearch(rawData, new WindData(dateFrom, null, null, null, null, null),
+                Comparator.comparing(WindData::getDateTime));
+
+        if (fromIndex < 0) {
+            fromIndex = -fromIndex - 1;  // Insertion point
+        } else {
+            // Move to the first occurrence of this date
+            while (fromIndex > 0 && rawData.get(fromIndex - 1).getDateTime().equals(dateFrom)) {
+                fromIndex--;
+            }
+        }
+        return fromIndex;
+        }
+}
+
