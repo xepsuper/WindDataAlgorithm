@@ -89,8 +89,8 @@ public class WindDataHandler {
         final List<WindData> sublist = rawData.subList(fromIndex, toIndex);
 
         //variables
-        double averageWindSpeed = 0;
-        String dataStr = "";
+        double averageWindSpeed;
+        String dataStr;
 
         LocalDate currentDay = null;
         double dailySum = 0;
@@ -224,8 +224,8 @@ public class WindDataHandler {
         //variables
         LocalDate currentDate = null;
         double highWindSpeed = 0;
-        String dataStr = "";
-        String currentTime = "";
+        String dataStr;
+        String currentTime;
 
 
 
