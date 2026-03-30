@@ -1,10 +1,8 @@
 package algo.winddata;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.math.*;
+import java.nio.file.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -162,10 +160,20 @@ public class WindDataHandler {
         final List<WindData> sublist = rawData.subList(fromIndex, toIndex);
 
         //variables
-        double averageWindSpeed = 0;
+        int count = 0;
+
         String dataStr = "";
+        LocalDate currentDate = null;
+
+    for(WindData data : sublist)
+    {
+        LocalDate localDate = data.getDateTime();
+        if(currentDate == null) currentDate = data.getDateTime();
+        if(!localDate.equals(currentDate)){
 
 
+        }
+    }
 //        List<String> result = new ArrayList<>();
 //        int approvedWinds = 0;
 //        int count = 0;
@@ -225,7 +233,7 @@ public class WindDataHandler {
         LocalDate currentDate = null;
         double highWindSpeed = 0;
         String dataStr;
-        String currentTime;
+        String currentTime = "";
 
 
 
@@ -233,6 +241,9 @@ public class WindDataHandler {
             LocalDate localDate = data.getDateTime();
             if(currentDate == null){
                 currentDate = localDate;
+            }
+            if(currentTime.isBlank()){
+                currentTime = data.getTimeStr();
             }
             if(!localDate.equals(currentDate))
             {
@@ -244,6 +255,9 @@ public class WindDataHandler {
                             " " + BigDecimal.valueOf(highWindSpeed).setScale(2, RoundingMode.HALF_UP)
                             +  " m/s";
                     result.add(dataStr);
+                    currentDate = localDate;
+                    currentTime = data.getTimeStr();
+
                 }
 
             }
