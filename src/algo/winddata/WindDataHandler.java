@@ -84,7 +84,7 @@ public class WindDataHandler {
         int dailyCount = 0;
 
         for (WindData data : sublist) {
-            LocalDate dataDate = data.getDateTime();
+            LocalDate dataDate = data.dateTime();
 
             if (currentDay == null) {
                 currentDay = dataDate;
@@ -101,7 +101,7 @@ public class WindDataHandler {
                 dailyCount = 0;
             }
 
-            dailySum += data.getWindSpeed();
+            dailySum += data.windSpeed();
             dailyCount++;
         }
 
@@ -144,9 +144,9 @@ public class WindDataHandler {
         int totalCount = 0;
 
         for (WindData data : sublist) {
-            LocalDate localDate = data.getDateTime();
-            String localApproveValue1 = data.getQualityControl1();
-            String localApproveValue2 = data.getQualityControl2();
+            LocalDate localDate = data.dateTime();
+            String localApproveValue1 = data.qualityControl1();
+            String localApproveValue2 = data.qualityControl2();
 
             // Check if both quality control values are approved ('G')
             boolean isApproved = "G".equalsIgnoreCase(localApproveValue1) && "G".equalsIgnoreCase(localApproveValue2);
@@ -215,14 +215,14 @@ public class WindDataHandler {
         double currentWindSpeed;
 
         for (WindData data : sublist) {
-            LocalDate localDate = data.getDateTime();
-            currentWindSpeed = data.getWindSpeed();
+            LocalDate localDate = data.dateTime();
+            currentWindSpeed = data.windSpeed();
 
             // Initialize for the first record
             if (currentDate == null) {
                 currentDate = localDate;
                 maxWindSpeed = currentWindSpeed;
-                maxWindSpeedTime = data.getTimeStr();
+                maxWindSpeedTime = data.timeStr();
                 continue;
             }
 
@@ -235,12 +235,12 @@ public class WindDataHandler {
                 // Reset for new day
                 currentDate = localDate;
                 maxWindSpeed = currentWindSpeed;
-                maxWindSpeedTime = data.getTimeStr();
+                maxWindSpeedTime = data.timeStr();
             }
             // Same day - check if current wind speed is higher
             else if (currentWindSpeed > maxWindSpeed) {
                 maxWindSpeed = currentWindSpeed;
-                maxWindSpeedTime = data.getTimeStr();
+                maxWindSpeedTime = data.timeStr();
             }
         }
 
@@ -263,13 +263,13 @@ public class WindDataHandler {
     //index methods
     private int getToIndex(LocalDate dateTo) { //O(logn)
         int toIndex = Collections.binarySearch(rawData, new WindData(dateTo, null, null, null, null, null),
-                Comparator.comparing(WindData::getDateTime));
+                Comparator.comparing(WindData::dateTime));
 
         if (toIndex < 0) {
             toIndex = -toIndex - 1;  // Insertion point
         } else {
             // Move to the last occurrence of this date
-            while (toIndex < rawData.size() - 1 && rawData.get(toIndex + 1).getDateTime().equals(dateTo)) {
+            while (toIndex < rawData.size() - 1 && rawData.get(toIndex + 1).dateTime().equals(dateTo)) {
                 toIndex++;
             }
             toIndex = toIndex + 1;  // Exclusive end index
@@ -279,13 +279,13 @@ public class WindDataHandler {
 
     private int getFromIndex(LocalDate dateFrom){ //O(logn)
         int fromIndex = Collections.binarySearch(rawData, new WindData(dateFrom, null, null, null, null, null),
-                Comparator.comparing(WindData::getDateTime));
+                Comparator.comparing(WindData::dateTime));
 
         if (fromIndex < 0) {
             fromIndex = -fromIndex - 1;  // Insertion point
         } else {
             // Move to the first occurrence of this date
-            while (fromIndex > 0 && rawData.get(fromIndex - 1).getDateTime().equals(dateFrom)) {
+            while (fromIndex > 0 && rawData.get(fromIndex - 1).dateTime().equals(dateFrom)) {
                 fromIndex--;
             }
         }
