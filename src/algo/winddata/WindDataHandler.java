@@ -23,8 +23,8 @@ public class WindDataHandler {
      * <p>
      * Timecomplexity is O(n)
      */
-    public void loadData(String filePath) throws IOException {
-        List<String> fileData = Files.readAllLines(Paths.get(filePath));  //O(n)
+    public void loadData(String filePath) throws IOException { //O(n)
+        List<String> fileData = Files.readAllLines(Paths.get(filePath));
 
 
         for (String line : fileData) {
@@ -128,7 +128,7 @@ public class WindDataHandler {
      * @return approved values for each date, sorted by date
      * Time complexity: O(k) where k is the number of records in the date range
      */
-    public List<String> approvedValues(LocalDate dateFrom, LocalDate dateTo) {
+    public List<String> approvedValues(LocalDate dateFrom, LocalDate dateTo) { //O(k)
         // checks and arraylists
         checkDate(dateFrom, dateTo);
         List<String> result = new ArrayList<>();
@@ -198,7 +198,7 @@ public class WindDataHandler {
      * @return highest wind speed for each date, sorted by date
      * Time complexity: O(k) where k is the number of records in the date range
      */
-    public List<String> highestWindSpeed(LocalDate dateFrom, LocalDate dateTo) {
+    public List<String> highestWindSpeed(LocalDate dateFrom, LocalDate dateTo) { //O(k)
         // check and arraylists
         checkDate(dateFrom, dateTo);
         List<String> result = new ArrayList<>();
@@ -254,13 +254,14 @@ public class WindDataHandler {
     }
 
     // Help methods
-    private void checkDate(LocalDate dateFrom, LocalDate dateTo) {
+    private void checkDate(LocalDate dateFrom, LocalDate dateTo) { //O(1)
         if(dateFrom.isAfter(dateTo) || dateTo == null){
-            System.out.println("Skriv in värde och skriv datumet korrekt");
+            throw new IllegalArgumentException("Skriv in datumet korrekt (X-datum måste vara större än Y-datum");
+
         }
     }
     //index methods
-    private int getToIndex(LocalDate dateTo) {
+    private int getToIndex(LocalDate dateTo) { //O(logn)
         int toIndex = Collections.binarySearch(rawData, new WindData(dateTo, null, null, null, null, null),
                 Comparator.comparing(WindData::getDateTime));
 
@@ -276,7 +277,7 @@ public class WindDataHandler {
         return toIndex;
     }
 
-    private int getFromIndex(LocalDate dateFrom){
+    private int getFromIndex(LocalDate dateFrom){ //O(logn)
         int fromIndex = Collections.binarySearch(rawData, new WindData(dateFrom, null, null, null, null, null),
                 Comparator.comparing(WindData::getDateTime));
 
